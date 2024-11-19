@@ -299,7 +299,8 @@ class BlackjackGame:
         Check if player has blackjack and update self.winner.
         """
         # Check if player hand value is 21
-        player_bj = self.get_hand_value(self.player_hand) == 21
+        player_hand_value, _ = self.get_hand_value(self.player_hand) 
+        player_bj = player_hand_value == 21
 
         if player_bj:
             if self.dealer_hand[0] in ['10', 'J', 'Q', 'K', 'A']:
