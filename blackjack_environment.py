@@ -5,10 +5,11 @@ from tqdm import tqdm
 
 
 class Cards:
-    def __init__(self, num_of_decks):
+    def __init__(self, num_of_decks=6):
         self.cards_remain = []
         self.cards_dealt = []
         self.num_of_decks = num_of_decks
+        self.min_num_of_cards = 52 * self.num_of_decks * 0.25
         self.running_count = 0
         self.true_count = 0
 
@@ -28,10 +29,7 @@ class Cards:
         """
         # If true count is not specified, create decks and shuffle them
         if true_count == 0:
-            self.cards_remain = self.initialize_cards()
-            self.cards_dealt = []
-            self.running_count = 0
-            self.true_count = 0
+            self.initialize_cards()
         else:
             self.running_count, self.cards_remain, self.cards_dealt = self.simulate_true_count(true_count=true_count)
             # Recalculate the true count
@@ -54,7 +52,11 @@ class Cards:
         decks = deck * self.num_of_decks
         # Shuffle them
         random.shuffle(decks)
-        return decks
+        
+        self.cards_remain = decks
+        self.cards_dealt = []
+        self.running_count = 0
+        self.true_count = 0
     
 
     def simulate_true_count(self, true_count):
@@ -154,7 +156,7 @@ class Cards:
         """
         # True count = intermediate count / the number of remaining decks
         decks_remain = round(len(self.cards_remain) / 52, 1)
-        self.true_count = round(self.running_count / decks_remain, 1)
+        self.true_count = round(self.running_count / decks_remain)
     
 
     def draw_card(self):
@@ -178,7 +180,7 @@ class BlackjackGame:
         self.dealer_hand = []
         self.player_hand = []
 
-        # State: player hand value, dealer hand value, true count, available Aces in player hand
+        # State: dealer hand value, player hand value, true count, usable Aces in player hand
         self.state = [0, 0, 0, False]
         # Action: 0 for stand and 1 for hit
         self.actions = [0, 1]
@@ -209,4 +211,247 @@ class BlackjackGame:
             self.state = [0, 0, self.cards_env.true_count, False]
 
 
+    def get_hand_value(self, hand):
+        """
+        Calculate the value of a hand.
+
+        Args:
+        - hand (list): List of cards in a hand.
+
+        Returns:
+        - value (int): hand value.
+        - usable_aces (bool): True if have at least one Ace valued at 1.
+        """
+        value = 0
+        aces_value = []
+
+        for card in hand:
+            if card in ['J', 'Q', 'K']:
+                value += 10
+            elif card == 'A':
+                # Try to value the Ace at 11
+                value += 11
+                aces_value.append(11)
+            else:
+                # For the rest of cards from 2 to 10
+                value += int(card)
+
+        # Adjust for multiple Aces if the value exceeds 21
+        while value > 21 and 11 in aces_value:
+            # Convert one Ace from 11 to 1
+            value -= 10
+            aces_value[aces_value.index(11)] = 1
+        
+        return value, aces_value
+    
+
+    def deal_initial_hands(self):
+        """
+        Deal 3 cards to player and dealer at the begining of each game.
+        """
+        # Deal two faced-up cards to player and one faced-up card to dealer alternatively
+        self.player_hand.append(self.cards_env.draw_card())
+        self.dealer_hand.append(self.cards_env.draw_card())
+        self.player_hand.append(self.cards_env.draw_card())
+
+        # Update state
+        dealer_hand_value, _ = self.get_hand_value(self.dealer_hand)
+        player_hand_value, aces_value = self.get_hand_value(self.player_hand)
+        usable_aces = 1 in aces_value
+        self.state[0] = dealer_hand_value
+        self.state[1] = player_hand_value
+        self.state[2] = self.cards_env.true_count
+        self.state[3] = usable_aces
+
+
+    def dealer_play(self):
+        """
+        Dealer's turn to play according to the rules.
+        """
+        hand_value, aces_value = self.get_hand_value(self.dealer_hand)
+        # Check soft 17
+        soft = 11 in aces_value
+        soft_17 = (hand_value == 17) and soft
+        
+        # Dealer draws if soft 17 or below
+        while hand_value < 17 or soft_17:
+            self.dealer_hand.append(self.cards_env.draw_card())
+            hand_value, aces_value = self.get_hand_value(self.dealer_hand)
+            soft = 11 in aces_value
+            soft_17 = (hand_value == 17) and soft
+
+        return hand_value
+    
+
+    def player_hit(self):
+        """
+        Player chooses to hit.
+        """
+        self.player_hand.append(self.cards_env.draw_card())
+        player_hand_value, aces_value = self.get_hand_value(self.player_hand)
+        usable_aces = 1 in aces_value
+
+        return player_hand_value, usable_aces
+
+
+    def check_blackjack(self):
+        """
+        Check if player has blackjack and update self.winner.
+        """
+        # Check if player hand value is 21
+        player_bj = self.get_hand_value(self.player_hand) == 21
+
+        if player_bj:
+            if self.dealer_hand[0] in ['10', 'J', 'Q', 'K', 'A']:
+                # If dealer has a chance to get blackjack, draw a card
+                self.dealer_hand.append(self.cards_env.draw_card())
+                dealer_hand_value, _ = self.get_hand_value(self.dealer_hand)
+                # Player wins unless dealer also has a blackjack, in which case a tie occurs
+                self.winner = 'tie' if dealer_hand_value == 21 else 'blackjack'
+            else:
+                # If dealer doesn't have a chance to get blackjack, player wins
+                self.winner = 'blackjack'
+        else:
+            # If player doesn't have a blackjack, game continues
+            self.winner = None
+    
+
+    def check_winner(self):
+        """
+        Check the result of the game.
+        """
+        if len(self.player_hand) == 2:
+            # Check blackjack after initial cards dealt
+            self.check_blackjack()
+            return self.winner
+        else:
+            # Get hand values
+            dealer_hand_value, _ = self.get_hand_value(self.dealer_hand)
+            player_hand_value, _ = self.get_hand_value(self.player_hand)
+            
+            # Check bust of player
+            if player_hand_value > 21:
+                self.winner = 'dealer'
+                return self.winner
+
+            # Check bust of dealer
+            if dealer_hand_value > 21:
+                self.winner = 'player'
+                return self.winner
+
+            # Compare two hand values if no one busts
+            if player_hand_value > dealer_hand_value:
+                self.winner = 'player'
+            elif player_hand_value < dealer_hand_value:
+                self.winner = 'dealer'
+            else:
+                # If both dealer and player have the same value, check if dealer has blackjack
+                if dealer_hand_value == 21 and len(self.dealer_hand) == 2:
+                    self.winner = 'dealer'
+                else:
+                    self.winner = 'tie'
+            return self.winner
+    
+
+    def place_bet(self):
+        """
+        Place a bet based on the true count
+        """
+        if self.true_count >= 2:
+            # Large bet
+            self.bet = 20
+        else:
+            # Small bet
+            self.bet = 1
+    
+
+    def clearing(self):
+        """
+        Calculate the rewared based on winner.
+        """
+        if self.winner == 'dealer':
+            reward = -1 * self.bet
+        elif self.winner == 'player':
+            reward = self.bet
+        elif self.winner == 'blackjack':
+            reward = 1.5 * self.bet
+        else:
+            reward = 0
+        return reward
+    
+
+    def new_game(self):
+        """
+        Start a new game on the same table.
+        The Hi-Lo counting system continues from the last game unless shuffle cards.
+        Return reward, current state and winner.
+        """
+        # Shuffle cards if 75% of cards have been dealt
+        if len(self.cards) <= self.min_num_of_cards:
+            self.cards_env.initialize_cards()
+        
+        # Reset hands, state
+        self.dealer_hand = []
+        self.player_hand = []
+        self.winner = None
+        self.state = [0, 0, self.cards_env.true_count, False]
+
+        # Place bet
+        self.place_bet()
+
+        # Deal initial cards
+        self.deal_initial_hands()
+        
+        # Check blackjack
+        self.check_winner()
+        reward = self.clearing()
+            
+        return reward, self.state, self.winner
+    
+
+    def step(self, state, action):
+        """
+        Player takes an action, hit or stand.
+        Return reward, next state and winner
+        """
+        next_state = state.copy()
+        
+        if action == 1:
+            # If player choose hit
+            player_hand_value, usable_aces = self.player_hit()
+            next_state[1] = player_hand_value
+            next_state[2] = self.cards_env.true_count
+            next_state[3] = usable_aces
+
+            if player_hand_value > 21:
+                # If player busts, dealer wins
+                self.winner = 'dealer'
+                reward = self.clearing()
+            elif player_hand_value == 21:
+                # If player get 21, dealer plays
+                dealer_hand_value = self.dealer_play()
+                next_state[0] = dealer_hand_value
+                next_state[2] = self.cards_env.true_count_bin
+                self.check_winner()
+                reward = self.clearing()
+            else:
+                # If player hand is less than 21, continue
+                self.winner = None
+                reward = 0
+
+        elif action == 0:
+            # If player choose stand
+            dealer_hand_value = self.dealer_play()
+            next_state[0] = dealer_hand_value
+            next_state[2] = self.cards_env.true_count
+            self.check_winner()
+            reward = self.clearing()
+
+        else:
+            # Invalid action
+            assert False, "Invalid action"
+
+        self.state = next_state
+        
+        return reward, next_state, self.winner
 
