@@ -2,7 +2,7 @@
 
 ## Overview
 
-This repository contains a Python implementation of a Blackjack game with card counting using the Hi-Lo system. The game follows the standard Blackjack rules, with the player making a decision to either "hit" or "stand." The game also incorporates a simple reinforcement learning (RL) agent that decides the best action based on the current game state, which includes both the player's and dealer's hand values as well as the true count of remaining cards. The agent adjusts its betting strategy according to the true count.
+This repository contains a Python implementation of a Blackjack game with card counting using the Hi-Lo system. The game follows the standard Blackjack rules, with the player making a decision to either "hit" or "stand." The game also incorporates a simple reinforcement learning (RL) agent that decides the best action based on the current game state, which includes both the player's and dealer's hands as well as the true count. The agent adjusts its betting strategy according to the state.
 
 The project contains:
 1. **Blackjack Game Environment**: Simulates the game according to the defined rules.
@@ -53,10 +53,10 @@ To visualize how the agent behaves under different true count conditions, use th
 
 ## Game Rules
 The game is based on traditional Blackjack rules, with some adjustments for card counting and betting:
-- Card Values: Number cards count as their face value, Jack, Queen, and King count as 10, and Aces can be counted as 1 or 11.
-- Blackjack: A player total of 21 with the first two cards is a Blackjack. The player wins unless the dealer also has a Blackjack, in which case a tie occurs.
-- Dealer Behavior: The dealer must draw cards if their hand value is a soft 17 (includes an Ace) or hard 16 or lower.
-- Hi-Lo Counting System: Cards are counted as:
+- **Card Values**: Number cards count as their face value, Jack, Queen, and King count as 10, and Aces can be counted as 1 or 11.
+- **Blackjack**: A player total of 21 with the first two cards is a Blackjack. The player wins unless the dealer also has a Blackjack, in which case a tie occurs.
+- **Dealer Behavior**: The dealer must draw cards if their hand value is a soft 17 (includes an Ace) or hard 16 or lower.
+- **Hi-Lo Counting System**: Cards are counted as:
     - +1 for low cards (2, 3, 4, 5, 6)
     - 0 for neutral cards (7, 8, 9)
     - -1 for high cards (10, Jack, Queen, King, Ace)
@@ -85,8 +85,8 @@ The agent's behavior under different true count conditions is visualized to demo
 
 ## Evaluation
 The agent's performance is evaluated through 10,000 simulations of 600 games each. The agent’s performance is analyzed under different true counts:
-- True Count +2: The agent is expected to have a statistical advantage over the house.
-- True Count -2: The agent is expected to be more conservative, with the house having a slight advantage.
+- **True Count +2**: The agent is expected to have a statistical advantage over the house.
+- **True Count -2**: The agent is expected to be more conservative, with the house having a slight advantage.
 The agent’s expected return is calculated and compared with theoretical expectations to determine if the agent is consistently performing as expected.
 
 ## License
