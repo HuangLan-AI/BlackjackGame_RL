@@ -41,15 +41,15 @@ The project contains:
 ## Usage
 ### Running the Game
 To start the Blackjack game and train the reinforcement learning agent, run the following command:
-```bash
-python blackjack_game.py
+    ```bash
+    python blackjack_game.py
 
 This will initialize the game and the agent, and the agent will start playing the game, making decisions based on the true count.
 
 ### Visualizing Agent Behavior
 To visualize how the agent behaves under different true count conditions, use the following command:
-```bash
-python visualize.py
+    ```bash
+    python visualize.py
 
 ## Game Rules
 The game is based on traditional Blackjack rules, with some adjustments for card counting and betting:
