@@ -201,10 +201,6 @@ class Hand:
         """
         self.hand.append(card)
         self.update_hand()
-
-    
-    def get_hand_len(self):
-        return len(self.hand)
     
 
     def update_hand(self):
@@ -212,23 +208,27 @@ class Hand:
         Updates the hand value based on the cards in the hand, adjusting for aces
         if the value exceeds 21 (turning aces from 11 to 1).
         """
+        value = 0
+        aces_value = []
         for card in self.hand:
             if card in ['J', 'Q', 'K']:
-                self.hand_value += 10
+                value += 10
             elif card == 'A':
                 # Try to value the Ace at 11
-                self.hand_value += 11
-                self.aces_value.append(11)
+                value += 11
+                aces_value.append(11)
             else:
                 # For the rest of cards from 2 to 10
-                self.hand_value += int(card)
+                value += int(card)
 
         # Adjust for multiple Aces if the value exceeds 21
-        while self.hand_value > 21 and 11 in self.aces_value:
+        while value > 21 and 11 in aces_value:
             # Convert one Ace from 11 to 1
-            self.hand_value -= 10
-            self.aces_value[self.aces_value.index(11)] = 1
-        
+            value -= 10
+            aces_value[aces_value.index(11)] = 1
+
+        self.hand_value = value
+        self.aces_value = aces_value
         self.usable_aces = 1 in self.aces_value
         self.soft = 11 in self.aces_value
         
@@ -285,13 +285,10 @@ class BlackjackGame:
         self.player_hand.add_card(self.cards.draw_card())
 
         # Update state
-        dealer_hand_value = self.dealer_hand.hand_value
-        player_hand_value = self.player_hand.hand_value
-        usable_aces = self.player_hand.usable_aces
-        self.state[0] = dealer_hand_value
-        self.state[1] = player_hand_value
+        self.state[0] = self.dealer_hand.hand_value
+        self.state[1] = self.player_hand.hand_value
         self.state[2] = self.cards.true_count
-        self.state[3] = usable_aces
+        self.state[3] = self.player_hand.usable_aces
 
 
     def dealer_play(self):
@@ -344,15 +341,17 @@ class BlackjackGame:
         else:
             # If player doesn't have a blackjack, game continues
             self.winner = None
+            
+        return player_bj
     
 
     def check_winner(self):
         """
         Check the result of the game.
         """
-        if len(self.player_hand) == 2:
+        if len(self.player_hand.hand) == 2 and len(self.dealer_hand.hand) == 1:
             # Check blackjack after initial cards dealt
-            self.check_blackjack()
+            player_bj = self.check_blackjack()
             return self.winner
         else:
             # Check bust of player
@@ -372,7 +371,7 @@ class BlackjackGame:
                 self.winner = 'dealer'
             else:
                 # If both dealer and player have the same value, check if dealer has blackjack
-                if self.dealer_hand.hand_value == 21 and len(self.dealer_hand) == 2:
+                if self.dealer_hand.hand_value == 21 and len(self.dealer_hand.hand) == 2:
                     self.winner = 'dealer'
                 else:
                     self.winner = 'tie'
@@ -440,14 +439,12 @@ class BlackjackGame:
         Player takes an action, hit or stand.
         Return reward, next state and winner
         """
-        next_state = self.state.copy()
-        
         if action == 1:
             # If player choose hit
             player_hand_value, usable_aces = self.player_hit()
-            next_state[1] = player_hand_value
-            next_state[2] = self.cards.true_count
-            next_state[3] = usable_aces
+            self.state[1] = player_hand_value
+            self.state[2] = self.cards.true_count
+            self.state[3] = usable_aces
 
             if player_hand_value > 21:
                 # If player busts, dealer wins
@@ -456,8 +453,8 @@ class BlackjackGame:
             elif player_hand_value == 21:
                 # If player get 21, dealer plays
                 dealer_hand_value = self.dealer_play()
-                next_state[0] = dealer_hand_value
-                next_state[2] = self.cards.true_count
+                self.state[0] = dealer_hand_value
+                self.state[2] = self.cards.true_count
                 self.check_winner()
                 reward = self.clearing()
             else:
@@ -468,16 +465,14 @@ class BlackjackGame:
         elif action == 0:
             # If player choose stand
             dealer_hand_value = self.dealer_play()
-            next_state[0] = dealer_hand_value
-            next_state[2] = self.cards.true_count
+            self.state[0] = dealer_hand_value
+            self.state[2] = self.cards.true_count
             self.check_winner()
             reward = self.clearing()
 
         else:
             # Invalid action
             assert False, "Invalid action"
-
-        self.state = next_state
         
         return reward, next_state, self.winner
     
