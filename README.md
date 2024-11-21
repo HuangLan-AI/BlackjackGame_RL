@@ -1,9 +1,10 @@
 # Blackjack with Card Counting and Reinforcement Learning
 
+![Blackjack](images/blackjack_bg.png)
+
 ## Overview
 
 This repository contains a Python implementation of a Blackjack game with card counting using the Hi-Lo system. The game follows the standard Blackjack rules, with the player making a decision to either "hit" or "stand." The game also incorporates a simple reinforcement learning (RL) agent that decides the best action based on the current game state, which includes both the player's and dealer's hands as well as the true count. The agent adjusts its betting strategy according to the state.
-![Blackjack](images/blackjack_bg.png)
 
 The project contains:
 1. **Blackjack Game Environment**: Simulates the game according to the defined rules.
