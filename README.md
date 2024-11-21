@@ -1,4 +1,4 @@
-# Blackjack Game with Card Counting and Reinforcement Learning
+# Blackjack with Card Counting and Reinforcement Learning
 
 ## Overview
 
