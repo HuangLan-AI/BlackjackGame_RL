@@ -474,7 +474,7 @@ class BlackjackGame:
             # Invalid action
             assert False, "Invalid action"
         
-        return reward, next_state, self.winner
+        return reward, self.state, self.winner
     
 
     def print_game_state(self):
