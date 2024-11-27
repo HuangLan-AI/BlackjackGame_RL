@@ -229,7 +229,7 @@ class Hand:
 
         self.hand_value = value
         self.aces_value = aces_value
-        self.usable_aces = 1 in self.aces_value
+        self.usable_aces = 11 in self.aces_value and value <= 21
         self.soft = 11 in self.aces_value
         
         
@@ -244,7 +244,7 @@ class BlackjackGame:
         self.dealer_hand = Hand()
         self.player_hand = Hand()
 
-        # State: dealer hand value, player hand value, true count, usable Aces in player hand
+        # State: dealer first card value, player hand value, true count, usable Aces in player hand
         self.state = [0, 0, 0, False]
         # Action: 0 for stand and 1 for hit
         self.actions = [0, 1]
@@ -308,7 +308,6 @@ class BlackjackGame:
             soft = self.dealer_hand.soft
             soft_17 = (hand_value == 17) and soft
 
-        return hand_value
     
 
     def player_hit(self):
@@ -452,8 +451,7 @@ class BlackjackGame:
                 reward = self.clearing()
             elif player_hand_value == 21:
                 # If player get 21, dealer plays
-                dealer_hand_value = self.dealer_play()
-                self.state[0] = dealer_hand_value
+                self.dealer_play()
                 self.state[2] = self.cards.true_count
                 self.check_winner()
                 reward = self.clearing()
@@ -464,8 +462,7 @@ class BlackjackGame:
 
         elif action == 0:
             # If player choose stand
-            dealer_hand_value = self.dealer_play()
-            self.state[0] = dealer_hand_value
+            self.dealer_play()
             self.state[2] = self.cards.true_count
             self.check_winner()
             reward = self.clearing()
