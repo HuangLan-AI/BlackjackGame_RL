@@ -309,7 +309,6 @@ class BlackjackGame:
             soft_17 = (hand_value == 17) and soft
 
     
-
     def player_hit(self):
         """
         Player chooses to hit.
