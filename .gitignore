@@ -2,3 +2,6 @@
 James.ipynb
 .ipynb_checkpoints/
 environment/__pycache__/
+logs/
+finetune/logs
+archive/
