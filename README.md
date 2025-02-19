@@ -12,48 +12,18 @@ The project contains:
 3. **Card Counting**: Uses the Hi-Lo system to track the running and true counts to influence the player's betting and actions.
 4. **Simulation and Evaluation**: The agent is evaluated through simulations to verify its performance.
 
+## Goal
+
+The goal of this project is to **train a reinforcement leanring model** that achieves a **positive reward when the True Count (TC) = 2**. By leveraging the Hi-Lo card counting system, the agent adjusts its strategy to maximize winnings under favorable deck conditions.  
+
 ## Table of Contents
 
-1. [Installation](#installation)
-2. [Usage](#usage)
-3. [Game Rules](#game-rules)
-4. [Reinforcement Learning](#reinforcement-learning)
-5. [Card Counting](#card-counting)
-6. [Visualizations](#visualizations)
-7. [Evaluation](#evaluation)
-8. [License](#license)
-
-## Installation
-
-### Requirements
-- Python 3.7 or higher
-- `numpy`, `matplotlib`, and other dependencies listed in the `requirements.txt`
-
-### Installation Steps
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/blackjack-game.git
-   cd blackjack-game
-
-2. Install the required dependencie:
-    ```bash
-    pip install -r requirements.txt
-
-## Usage
-### Running the Game
-To start the Blackjack game and train the reinforcement learning agent, run the following command:
-```bash
-python blackjack_game.py
-```
-
-This will initialize the game and the agent, and the agent will start playing the game, making decisions based on the true count.
-
-### Visualizing Agent Behavior
-To visualize how the agent behaves under different true count conditions, use the following command:
-```bash
-python visualize.p
-```
+1. [Game Rules](#game-rules)
+2. [Card Counting](#card-counting)
+3. [Reinforcement Learning](#reinforcement-learning)
+4. [Comparison & Evaluation](#evaluation)
+5. [Visualizations](#visualizations)
+6. [Conclusion](#conclusion)
 
 ## Game Rules
 The game is based on traditional Blackjack rules, with some adjustments for card counting and betting:
@@ -64,18 +34,7 @@ The game is based on traditional Blackjack rules, with some adjustments for card
     - +1 for low cards (2, 3, 4, 5, 6)
     - 0 for neutral cards (7, 8, 9)
     - -1 for high cards (10, Jack, Queen, King, Ace)
-- Bets: A large bet (20x minimum) is made when the true count is +2 or higher, and a small bet (1x minimum) is made otherwise.
-
-## Reinforcement Learning
-The reinforcement learning agent is trained to make decisions (either "hit" or "stand") based on the current game state. The agent's decisions are influenced by:
-- The total value of the player's hand.
-- The total value of the dealer's hand.
-- The true count, which indicates the remaining deck's favorability.
-- Wether have usable Aces.
-The agent is trained using Q-learning or another RL algorithm to maximize the expected return based on its actions.
-
-### Training the Agent
-The agent updates its Q-values after each action (hit or stand), using the rewards from the environment (win, loss, tie, or Blackjack). The agent adjusts its strategy based on the true count, making larger bets when the count is favorable and playing more conservatively when the count is unfavorable.
+- Bets: A large bet (20) is made when the true count is +2 or higher, and a small bet (1) is made otherwise.
 
 ## Card Counting
 Card counting is implemented using the Hi-Lo system:
@@ -84,16 +43,32 @@ Card counting is implemented using the Hi-Lo system:
 - High cards (10, Jack, Queen, King, Ace) decrease the running count by -1.
 The running count is then divided by the number of remaining decks to calculate the true count. This value influences the agent’s betting and decision-making.
 
+## Reinforcement Learning
+The reinforcement learning agent is trained to make decisions (either "hit" or "stand") based on the current game state. The agent's decisions are influenced by:
+- The total value of the player's hand.
+- The total value of the dealer's hand.
+- The true count, which indicates the remaining deck's favorability.
+- Wether have usable Aces.
+The agent is trained using Temporal Difference (e.g. Q-learning) and PPO algorithm to maximize the expected return based on its actions.
+
+## Comparison & Evaluation
+The performance of the **TD model** and **PPO model** through 10,000 games is summarized and compared below. While the **PPO model** is generally considered a more advanced method, the **Q-Learning model (TD with λ = 1)** achieved a higher reward in this case. This is likely because **Q-Learning's table-based approach efficiently captures the discrete game states** in Blackjack, allowing it to converge to an optimal policy more effectively than PPO, which relies on function approximation and may require more data for stable learning.
+
+Additionally, both models performed better when **True Count (TC) = 2** compared to **TC = -2**, aligning with expectations. A **higher TC (TC = 2)** indicates that more **high-value cards (10s and Aces) remain in the deck**, increasing the likelihood of **stronger player hands and Blackjacks**, while **TC = -2** suggests a deck with more low-value cards, favoring the dealer. This explains why the models perform better in **favorable deck conditions (TC = 2)** by taking advantage of the increased probability of winning hands.
+
+| Method    | True Count  | Win Rate (%) | Loss Rate (%) | Tie Rate (%) | Average Reward |
+|-----------|-------------|--------------|---------------|--------------|----------------|
+| TD        | 2           | 45.06        | 47.28         | 7.66         | 0.17           |
+| TD        | -2          | 42.46        | 49.14         | 8.40         | -0.04          |
+| PPO       | 2           | 43.04        | 48.51         | 8.45         | -1.09          |
+| PPO       | -2          | 41.29        | 50.19         | 8.52         | -0.09          |
+
 ## Visualisation
-The agent's behavior under different true count conditions is visualized to demonstrate how it adapts to favorable and unfavorable deck compositions.
+The Q-Learning agent's behavior under different true count conditions is visualized to demonstrate how it adapts to favorable and unfavorable deck compositions.
 
-## Evaluation
-The agent's performance is evaluated through 10,000 simulations of 600 games each. The agent’s performance is analyzed under different true counts:
-- **True Count +2**: The agent is expected to have a statistical advantage over the house.
-- **True Count -2**: The agent is expected to be more conservative, with the house having a slight advantage.
-The agent’s expected return is calculated and compared with theoretical expectations to determine if the agent is consistently performing as expected.
+## Conclusion
+Mission accomplished! 🎉 We have successfully trained a **Q-Learning model** that **beats the odds** and **rakes in positive rewards** when true count is 2 over a large number of games. 🃏💰  
 
-## License
-This project is licensed under the MIT License - see the LICENSE file for details.
+So, if you're ever in a Blackjack showdown, just remember—our AI has your back (but maybe don’t bet your life savings on it)! 😆  
 
 
