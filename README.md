@@ -65,9 +65,14 @@ Additionally, both models performed better when **True Count (TC) = 2** compared
 
 ## Visualisation
 The Q-Learning agent's behavior under different true count conditions is visualized to demonstrate how it adapts to favorable and unfavorable deck compositions.
+
+For the case where true count is 2:
+
 ![Q-table1](images/qtable_tc2_false.png)
 ![Q-table2](images/qtable_tc2_true.png)
 ![Policy1](images/policy_tc2.png)
+
+For the case where true count is -2:
 
 ![Q-table3](images/qtable_tc-2_false.png)
 ![Q-table4](images/qtable_tc-2_true.png)
