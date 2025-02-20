@@ -65,6 +65,13 @@ Additionally, both models performed better when **True Count (TC) = 2** compared
 
 ## Visualisation
 The Q-Learning agent's behavior under different true count conditions is visualized to demonstrate how it adapts to favorable and unfavorable deck compositions.
+![Q-table1](images/qtable_tc2_false.png)
+![Q-table2](images/qtable_tc2_true.png)
+![Policy1](images/policy_tc2.png)
+
+![Q-table3](images/qtable_tc-2_false.png)
+![Q-table4](images/qtable_tc-2_true.png)
+![Policy2](images/policy_tc-2.png)
 
 ## Conclusion
 Mission accomplished! 🎉 We have successfully trained a **Q-Learning model** that **beats the odds** and **rakes in positive rewards** when true count is 2 over a large number of games. 🃏💰  
